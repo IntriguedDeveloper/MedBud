@@ -1,4 +1,4 @@
-import type { Reminder } from "../models/Reminder.ts";
+import type { Reminder } from "../models/Reminder";
 
 interface Props {
   reminders: Reminder[];
@@ -7,43 +7,19 @@ interface Props {
 }
 
 export default function ReminderList({ reminders, onDelete, onEdit }: Props) {
-  const isUpcoming = (time: string) => {
-    const now = new Date();
-    const reminderTime = new Date();
-    const [h, m] = time.split(":").map(Number);
-    reminderTime.setHours(h, m, 0);
-    return reminderTime.getTime() - now.getTime() <= 3600000 && reminderTime > now;
-  };
-
   return (
-    <div className="max-w-3xl mx-auto mt-10 px-4">
-      <h2 className="text-2xl font-bold mb-4">Your Reminders</h2>
-
+    <div className="mt-4 space-y-2">
       {reminders.map((r) => (
-        <div
-          key={r.id}
-          className={`flex justify-between items-center p-4 mb-3 rounded-xl shadow ${
-            isUpcoming(r.time) ? "bg-yellow-100 border-l-4 border-yellow-500" : "bg-white"
-          }`}
-        >
-          <div>
-            <h3 className="text-lg font-semibold">{r.medicine}</h3>
-            <p className="text-gray-700">🕒 {r.time}</p>
-            <p className="text-gray-700">💊 {r.dosage}</p>
-          </div>
+        <div key={r.id} className="p-4 bg-gray-100 rounded shadow">
+          <h3 className="font-bold">{r.medicine}</h3>
+          <p>{r.dosage}</p>
+          <p>⏰ {r.time}</p>
 
-          <div className="flex gap-2">
-            <button
-              onClick={() => onEdit(r)}
-              className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            >
+          <div className="flex space-x-2 mt-2">
+            <button className="btn" onClick={() => onEdit(r)}>
               Edit
             </button>
-
-            <button
-              onClick={() => onDelete(r.id)}
-              className="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-            >
+            <button className="btn bg-red-500" onClick={() => onDelete(r.id)}>
               Delete
             </button>
           </div>

@@ -1,92 +1,73 @@
-import { useEffect, useState } from "react";
-import type { Reminder } from "./models/Reminder.ts";
-import Header from "./components/Header.tsx";
+import { useState } from "react";
+import TabNavigation from "./components/TabNavigation";
+
 import ReminderForm from "./components/ReminderForm";
 import ReminderList from "./components/ReminderList";
 
+import AppointmentForm from "./components/AppointmentForm";
+import AppointmentList from "./components/AppointmentList";
+
+import WaterTracker from "./components/WaterTracker";
+
+import type { Reminder } from "./models/Reminder";
+import type { Appointment } from "./models/Appointment";
+import type { WaterLog } from "./models/WaterLog";
+
 export default function App() {
+  const [tab, setTab] = useState("reminders");
+
   const [reminders, setReminders] = useState<Reminder[]>([]);
-  const [search, setSearch] = useState("");
-  const [editingReminder, setEditingReminder] = useState<Reminder | null>(null);
+  const [editing, setEditing] = useState<Reminder | null>(null);
 
-  // Load from LocalStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("reminders");
-    if (saved) setReminders(JSON.parse(saved));
-  }, []);
-
-  // Save to LocalStorage
-  useEffect(() => {
-    localStorage.setItem("reminders", JSON.stringify(reminders));
-  }, [reminders]);
-
-  const addReminder = (r: Reminder) => {
-    setReminders([...reminders, r]);
-  };
-
-  const deleteReminder = (id: string) => {
-    setReminders(reminders.filter((r) => r.id !== id));
-  };
-
-  const updateReminder = (updated: Reminder) => {
-    setReminders(reminders.map((r) => (r.id === updated.id ? updated : r)));
-    setEditingReminder(null);
-  };
-
-  const filtered = reminders.filter((r) =>
-    r.medicine.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const nextReminder = [...reminders].sort(
-    (a, b) => Number(new Date(`2000-01-01 ${a.time}`)) - Number(new Date(`2000-01-01 ${b.time}`))
-  )[0];
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [waterLogs, setWaterLogs] = useState<WaterLog[]>([]);
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Header />
+    <div className="max-w-xl mx-auto p-4">
+      <h1 className="text-3xl font-bold text-center mb-4">
+        Health Assistant App
+      </h1>
 
-      {/* Dashboard */}
-      <div className="max-w-4xl mx-auto mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 px-4">
-        <div className="bg-white shadow p-4 rounded-xl text-center">
-          <h3 className="text-gray-600">Total Reminders</h3>
-          <p className="text-3xl font-bold">{reminders.length}</p>
-        </div>
+      <TabNavigation tab={tab} setTab={setTab} />
 
-        <div className="bg-white shadow p-4 rounded-xl text-center">
-          <h3 className="text-gray-600">Next Reminder</h3>
-          <p className="text-lg font-semibold">
-            {nextReminder ? `${nextReminder.medicine} @ ${nextReminder.time}` : "None"}
-          </p>
-        </div>
+      {tab === "reminders" && (
+        <>
+          <ReminderForm
+            onAdd={(r) => setReminders([...reminders, r])}
+            onUpdate={(r) =>
+              setReminders(reminders.map((x) => (x.id === r.id ? r : x)))
+            }
+            editing={editing}
+          />
+          <ReminderList
+            reminders={reminders}
+            onDelete={(id) => setReminders(reminders.filter((r) => r.id !== id))}
+            onEdit={setEditing}
+          />
+        </>
+      )}
 
-        <div className="bg-white shadow p-4 rounded-xl text-center">
-          <h3 className="text-gray-600">Today's Reminders</h3>
-          <p className="text-3xl font-bold">{reminders.length}</p>
-        </div>
-      </div>
+      {tab === "appointments" && (
+        <>
+          <AppointmentForm
+            onAdd={(a) => setAppointments([...appointments, a])}
+          />
+          <AppointmentList
+            appointments={appointments}
+            onToggle={(id) =>
+              setAppointments(
+                appointments.map((a) =>
+                  a.id === id ? { ...a, completed: !a.completed } : a
+                )
+              )
+            }
+          />
+        </>
+      )}
 
-      {/* Search Bar */}
-      <div className="max-w-xl mx-auto px-4 mt-6">
-        <input
-          type="text"
-          placeholder="Search medicine..."
-          className="w-full p-3 rounded-xl border border-gray-300 shadow-sm"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
-
-      <ReminderForm
-        onAdd={addReminder}
-        editing={editingReminder}
-        onUpdate={updateReminder}
-      />
-
-      <ReminderList
-        reminders={filtered}
-        onDelete={deleteReminder}
-        onEdit={(r) => setEditingReminder(r)}
-      />
+      {tab === "water" && (
+        <WaterTracker waterLogs={waterLogs} setWaterLogs={setWaterLogs} />
+      )}
     </div>
   );
 }

@@ -1,76 +1,69 @@
-import { useEffect, useState } from "react";
-import type { Reminder } from "../models/Reminder.ts";
+import { useState, useEffect } from "react";
+import type { Reminder } from "../models/Reminder";
 
 interface Props {
   onAdd: (r: Reminder) => void;
-  editing: Reminder | null;
   onUpdate: (r: Reminder) => void;
+  editing: Reminder | null;
 }
 
-export default function ReminderForm({ onAdd, editing, onUpdate }: Props) {
+export default function ReminderForm({ onAdd, onUpdate, editing }: Props) {
   const [medicine, setMedicine] = useState("");
-  const [time, setTime] = useState("");
   const [dosage, setDosage] = useState("");
+  const [time, setTime] = useState("");
 
   useEffect(() => {
     if (editing) {
       setMedicine(editing.medicine);
-      setTime(editing.time);
       setDosage(editing.dosage);
+      setTime(editing.time);
     }
   }, [editing]);
 
-  const submit = (e: any) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const nextTrigger = new Date(`2000-01-01T${time}:00`).getTime();
+
     if (editing) {
-      onUpdate({ ...editing, medicine, time, dosage });
+      onUpdate({ ...editing, medicine, dosage, time, nextTrigger });
     } else {
       onAdd({
         id: crypto.randomUUID(),
         medicine,
-        time,
         dosage,
+        time,
+        nextTrigger,
       });
     }
 
     setMedicine("");
-    setTime("");
     setDosage("");
+    setTime("");
   };
 
   return (
-    <form
-      onSubmit={submit}
-      className="max-w-xl mx-auto mt-8 bg-white shadow p-6 rounded-xl"
-    >
-      <h2 className="text-xl font-bold mb-4">
-        {editing ? "Edit Reminder" : "Add Medicine Reminder"}
-      </h2>
-
-      <label className="font-medium">Medicine Name</label>
+    <form onSubmit={handleSubmit} className="p-4 bg-white shadow rounded">
       <input
-        className="w-full p-3 border rounded-lg mb-3"
+        className="input"
+        placeholder="Medicine"
         value={medicine}
         onChange={(e) => setMedicine(e.target.value)}
       />
-
-      <label className="font-medium">Time</label>
+      <input
+        className="input mt-2"
+        placeholder="Dosage"
+        value={dosage}
+        onChange={(e) => setDosage(e.target.value)}
+      />
       <input
         type="time"
-        className="w-full p-3 border rounded-lg mb-3"
+        className="input mt-2"
         value={time}
         onChange={(e) => setTime(e.target.value)}
       />
 
-      <label className="font-medium">Dosage</label>
-      <input
-        className="w-full p-3 border rounded-lg mb-4"
-        value={dosage}
-        onChange={(e) => setDosage(e.target.value)}
-      />
-
-      <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+      <button className="btn mt-3 w-full">
         {editing ? "Update Reminder" : "Add Reminder"}
       </button>
     </form>
