@@ -1,7 +1,7 @@
 export interface Reminder {
-  id: number;
-  name: string;
-  dose: string;
+  id: string;        // crypto.randomUUID() returns a string
+  medicine: string;  // you used "medicine" everywhere
+  dosage: string;    // you used "dosage"
   time: string;
-  nextTrigger: number;
+  nextTrigger?: number;
 }
